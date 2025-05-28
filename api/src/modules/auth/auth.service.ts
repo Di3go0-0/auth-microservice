@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { RegisterType } from './types/register.type';
 import { EmailsService } from 'src/shared/emails/emails.service';
 import { LinksService } from 'src/shared/links/links.service';
@@ -19,23 +19,32 @@ export class AuthService {
     const inserted = { emailId: '', passwordId: '', linkId: '' };
     try {
       inserted.emailId = await this.emails.create(body.email);
-      inserted.passwordId = await this.passwords.create((body.password));
-      inserted.linkId = await this.links.create({
-        emailRef: inserted.emailId,
-        passwordRef: inserted.passwordId,
-      });
+      try {
+        inserted.passwordId = await this.passwords.create(body.password);
+      } catch (err) {
+        if (inserted.emailId) {
+          await this.emails.delete(inserted.emailId);
+        }
+        throw new InternalServerErrorException('Registro falló');
+      }
+      try {
+        inserted.linkId = await this.links.create({
+          emailRef: inserted.emailId,
+          passwordRef: inserted.passwordId,
+        });
+      } catch (err) {
+        if (inserted.passwordId) {
+          await this.passwords.delete(inserted.passwordId);
+        }
+        if (inserted.emailId) {
+          await this.emails.delete(inserted.emailId);
+        }
+        throw new InternalServerErrorException('Registro falló');
+      }
       return { userId: inserted.linkId };
     } catch (err) {
-      if (inserted.linkId) {
-        await this.links.delete(inserted.linkId);
-      }
-      if (inserted.passwordId) {
-        await this.passwords.delete(inserted.passwordId);
-      }
-      if (inserted.emailId) {
-        await this.emails.delete(inserted.emailId);
-      }
-      throw new InternalServerErrorException('Registro falló');
+      if (err instanceof HttpException) { throw err; }
+      throw err;
     }
   }
 
