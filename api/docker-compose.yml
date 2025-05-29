@@ -1,16 +1,16 @@
 services:
-  postgres:
+  auth-postgres:
     image: postgres:14
     container_name: auth-postgres
     restart: always
     env_file:
-      - ./.env # define POSTGRES_USER, POSTGRES_PASSWORD, etc.
+      - ./.env
     volumes:
-      - db-data:/var/lib/postgresql/data
-      - './docker/initdb:/docker-entrypoint-initdb.d' # tu init scripts
+      - auth_db_data:/var/lib/postgresql/data
+      - './docker/initdb:/docker-entrypoint-initdb.d'
     ports:
       - '5432:5432'
 
 volumes:
-  db-data:
-    name: postgres_data
+  auth_db_data:
+    name: auth_db_data
