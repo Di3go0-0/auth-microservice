@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -10,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        host: 'localhost',
+        host: 'pb1.incus',
         port: 5432,
         database: 'users_passwords_db',
         username: cfg.get<string>('PASSWORDS_DB_USER'),
@@ -22,5 +21,4 @@ import { ConfigService } from '@nestjs/config';
   ],
   exports: [TypeOrmModule],
 })
-export class PasswordsDatabaseModule { }
-
+export class PasswordsDatabaseModule {}

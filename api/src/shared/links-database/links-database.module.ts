@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        host: 'localhost',
+        host: 'pb1.incus',
         port: 5432,
         database: 'users_links_db',
         username: cfg.get<string>('LINKS_DB_USER'),
@@ -21,5 +21,4 @@ import { ConfigService } from '@nestjs/config';
   ],
   exports: [TypeOrmModule],
 })
-export class LinksDatabaseModule { }
-
+export class LinksDatabaseModule {}
