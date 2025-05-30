@@ -9,6 +9,7 @@ import { SwaggerConfig } from './shared/swagger/swagger.config';
 async function bootstrap() {
   const rute = process.env.SWAGGER_RUTE || ENV.CONSTANS.SWAGGER_RUTE;
   const port = process.env.API_PORT || ENV.CONSTANS.API_PORT;
+  const front = process.env.APP || ENV.CONSTANS.APP;
 
   const app = await NestFactory.create(AppModule);
 
@@ -29,7 +30,11 @@ async function bootstrap() {
     }),
   )
   console.log(`Swagger running on: localhost:${port}/${rute}`);
-  app.enableCors();
+  app.enableCors({
+    origin: front,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();
