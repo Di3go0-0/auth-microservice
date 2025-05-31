@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        host: 'pb1.incus',
+        host: '10.101.90.177',
         port: 5432,
         database: 'users_links_db',
         username: cfg.get<string>('LINKS_DB_USER'),
