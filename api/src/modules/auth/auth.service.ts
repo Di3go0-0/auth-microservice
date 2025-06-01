@@ -24,7 +24,7 @@ export class AuthService {
     const inserted = { emailId: '', passwordId: '', linkId: '' };
     const existingEmail = await this.emails.findByEmail(body.email);
     if (existingEmail) {
-      throw new HttpException({ message: `${body.email} already used` }, 400);
+      throw new HttpException({ email: `${body.email} already used` }, 400);
     }
 
     try {
