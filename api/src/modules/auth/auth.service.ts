@@ -1,4 +1,9 @@
-import { HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RegisterType } from './types/register.type';
 import { EmailsService } from 'src/shared/emails/emails.service';
 import { LinksService } from 'src/shared/links/links.service';
@@ -13,15 +18,20 @@ export class AuthService {
     private readonly passwords: PasswordsService,
     private readonly links: LinksService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async register(body: RegisterType) {
     const inserted = { emailId: '', passwordId: '', linkId: '' };
+    const existingEmail = await this.emails.findByEmail(body.email);
+    if (existingEmail) {
+      throw new HttpException({ message: `${body.email} already used` }, 400);
+    }
+
     try {
       inserted.emailId = await this.emails.create(body.email);
       try {
         inserted.passwordId = await this.passwords.create(body.password);
-      } catch (err) {
+      } catch {
         if (inserted.emailId) {
           await this.emails.delete(inserted.emailId);
         }
@@ -32,7 +42,7 @@ export class AuthService {
           emailRef: inserted.emailId,
           passwordRef: inserted.passwordId,
         });
-      } catch (err) {
+      } catch {
         if (inserted.passwordId) {
           await this.passwords.delete(inserted.passwordId);
         }
@@ -43,7 +53,9 @@ export class AuthService {
       }
       return { userId: inserted.linkId };
     } catch (err) {
-      if (err instanceof HttpException) { throw err; }
+      if (err instanceof HttpException) {
+        throw new InternalServerErrorException('Registro falló');
+      }
       throw err;
     }
   }
@@ -52,12 +64,14 @@ export class AuthService {
     const emailRec = await this.emails.findByEmail(body.email);
     const linkRec = await this.links.findByEmailRef(emailRec.id);
     const passRec = await this.passwords.findById(linkRec.passwordRef);
-    if (!await this.passwords.compare(body.password, passRec.hash))
+    if (!(await this.passwords.compare(body.password, passRec.hash)))
       throw new UnauthorizedException();
-    const token = this.jwtService.generateToken({ id: linkRec.id, email: body.email });
+    const token = this.jwtService.generateToken({
+      id: linkRec.id,
+      email: body.email,
+    });
     return { token };
   }
-
 
   async verifyToken(token: string) {
     const payload = await this.jwtService.verifyToken(token);
