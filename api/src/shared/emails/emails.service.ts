@@ -26,6 +26,12 @@ export class EmailsService {
     return ent;
   }
 
+  async emailExist(email: string): Promise<boolean> {
+    const exitemail = await this.emailRepo.find({ where: { email } })
+    if (!exitemail) return false
+    return true
+  }
+
   async delete(id: string): Promise<void> {
     await this.emailRepo.delete(id);
   }

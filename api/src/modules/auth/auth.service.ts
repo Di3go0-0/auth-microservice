@@ -17,6 +17,11 @@ export class AuthService {
 
   async register(body: RegisterType) {
     const inserted = { emailId: '', passwordId: '', linkId: '' };
+    const existingEmail = await this.emails.emailExist(body.email);
+    if (existingEmail) {
+      throw new HttpException({ email: `${body.email} already used` }, 400);
+    }
+
     try {
       inserted.emailId = await this.emails.create(body.email);
       try {
