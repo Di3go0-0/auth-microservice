@@ -28,7 +28,7 @@ export class EmailsService {
 
   async emailExist(email: string): Promise<boolean> {
     const exitemail = await this.emailRepo.find({ where: { email } })
-    if (!exitemail) return false
+    if (exitemail.length == 0) return false
     return true
   }
 
